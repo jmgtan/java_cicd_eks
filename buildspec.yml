@@ -5,7 +5,7 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --region us-east-1 --no-include-email)
-      - REPOSITORY_URI=284546856933.dkr.ecr.us-east-1.amazonaws.com/devops_demo
+      - REPOSITORY_URI=516383166499.dkr.ecr.us-east-1.amazonaws.com/todo
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
   build:
     commands:
@@ -21,6 +21,6 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      - printf '[{"name":"devops-demo","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - sed 's|IMAGE_TAG|'"$REPOSITORY_URI"':'"$IMAGE_TAG"'|' kubernetes/todo-rc-def.yaml > eks-rc.yaml
 artifacts:
-    files: imagedefinitions.json
+    files: eks-rc.yaml
