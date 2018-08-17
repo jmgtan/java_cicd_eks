@@ -6,7 +6,7 @@ metadata:
     app: todo
 spec:
   ports:
-    - port: 3000
+    - port: 8080
       targetPort: todo-server
   selector:
     app: todo
