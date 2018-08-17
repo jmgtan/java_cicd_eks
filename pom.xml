@@ -102,45 +102,7 @@
         </dependency>
 	</dependencies>
 	<build>
-		<pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.simplify4u.plugins</groupId>
-          <artifactId>pgpverify-maven-plugin</artifactId>
-          <version>1.2.0</version>
-        </plugin>
-				<plugin>
-          <groupId>com.github.spotbugs</groupId>
-          <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>3.1.6-SNAPSHOT</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
 		<plugins>
-			<plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>3.1.5</version>
-				<executions>
-            <execution>
-								<phase>verify</phase>
-                <goals>
-                    <goal>check</goal>
-                </goals>
-            </execution>
-         </executions>
-      </plugin>
-			<plugin>
-        <groupId>org.simplify4u.plugins</groupId>
-        <artifactId>pgpverify-maven-plugin</artifactId>
-        <executions>
-            <execution>
-                <goals>
-                    <goal>check</goal>
-                </goals>
-            </execution>
-         </executions>
-      </plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
