@@ -1,0 +1,9 @@
+FROM jboss/wildfly
+ADD target/demo-0.0.1-SNAPSHOT.war /opt/jboss/wildfly/standalone/deployments/demo.war
+ENV PORT=8080
+# ENV SPRING_PROFILES_ACTIVE=mysql
+# ENV MYSQL_HOST=mysql
+# ENV MYSQL_DBNAME=devops_demo
+# ENV MYSQL_USERNAME=root
+# ENV MYSQL_PASSWORD=root
+EXPOSE ${PORT}

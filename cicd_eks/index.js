@@ -1,15 +1,19 @@
 const os = require("os");
+const AWS = require("aws-sdk");
 const download = require("download-file");
 const util = require("util");
 const downloadPromise = util.promisify(download);
 const path = require("path");
 const fs = require("fs");
 const binPerm = "0755";
+const extract = util.promisify(require("extract-zip"));
 const execAsync = util.promisify(require("child_process").exec);
 const execCmd = "%s --kubeconfig %s %s";
 
 const authenticatorPath = "/tmp/aws-iam-authenticator";
 const kubectlPath = "/tmp/kubectl";
+const buildTarget = "/tmp/build-target";
+const rcPath = "/tmp/imagedefinitions.json";
 
 const authenticatorMap = {
     "linux": "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator",
@@ -22,10 +26,28 @@ const kubectlMap = {
 }
 
 exports.handler = async(event) => {
-    console.log(event);
+    var jobId = event["CodePipeline.job"].id;
+    var codepipeline = new AWS.CodePipeline();
+    var s3Location = event["CodePipeline.job"]["data"]["inputArtifacts"][0]["location"]["s3Location"];
+    var objectKey = s3Location.objectKey;
+    var bucketName = s3Location.bucketName;
+    console.log(s3Location);
     await configureEnvironment();
-    var output = await executeCommand();
-    console.log(output.stdout);
+    await downloadBuild(bucketName, objectKey);
+    var imageDefinitions = require(rcPath);
+    console.log(imageDefinitions);
+    var output = await executeCommand(imageDefinitions.imageUri);
+    console.log(output);
+    await codepipeline.putJobSuccessResult({jobId: jobId}).promise();
+
+    return output;
+}
+
+async function downloadBuild(bucketName, objectKey) {
+    var s3 = new AWS.S3();
+    var objectData = await s3.getObject({Bucket: bucketName, Key: objectKey}).promise();
+    fs.writeFileSync(buildTarget, objectData.Body);
+    await extract(buildTarget, {dir: path.dirname(rcPath)});
 }
 
 async function configureEnvironment() {
@@ -46,6 +68,6 @@ async function configureEnvironment() {
     }
 }
 
-async function executeCommand() {
-    return await execAsync(util.format(execCmd, kubectlPath, __dirname+"/config", "get svc"));
+async function executeCommand(imageUri) {
+    return await execAsync(util.format(execCmd, kubectlPath, __dirname+"/config", "rolling-update todo --image="+imageUri+" --image-pull-policy=Always"));
 }
