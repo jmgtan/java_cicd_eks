@@ -31,13 +31,10 @@ exports.handler = async(event) => {
     var s3Location = event["CodePipeline.job"]["data"]["inputArtifacts"][0]["location"]["s3Location"];
     var objectKey = s3Location.objectKey;
     var bucketName = s3Location.bucketName;
-    console.log(s3Location);
     await configureEnvironment();
     await downloadBuild(bucketName, objectKey);
     var imageDefinitions = require(rcPath);
-    console.log(imageDefinitions);
-    var output = await executeCommand(imageDefinitions.imageUri);
-    console.log(output);
+    var output = await executeCommand(imageDefinitions.rcName, imageDefinitions.imageUri);
     await codepipeline.putJobSuccessResult({jobId: jobId}).promise();
 
     return output;
@@ -68,6 +65,6 @@ async function configureEnvironment() {
     }
 }
 
-async function executeCommand(imageUri) {
-    return await execAsync(util.format(execCmd, kubectlPath, __dirname+"/config", "rolling-update todo --image="+imageUri+" --image-pull-policy=Always"));
+async function executeCommand(rcName, imageUri) {
+    return await execAsync(util.format(execCmd, kubectlPath, __dirname+"/config", "rolling-update "+rcName+" --image="+imageUri+" --image-pull-policy=Always"));
 }
